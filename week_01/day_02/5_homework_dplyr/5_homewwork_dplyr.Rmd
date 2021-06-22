@@ -1,0 +1,33 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+starbucks_drinkMenu_expanded <- read.csv("data/starbucks_drinkMenu_expanded.csv")
+```
+
+```{r}
+dim(starbucks_drinkMenu_expanded)
+```
+
+```{r}
+nrow(starbucks_drinkMenu_expanded)
+```
+
+```{r}
+ncol(starbucks_drinkMenu_expanded)
+```
+
+```{r}
+names(starbucks_drinkMenu_expanded)
+```
+
+```{r}
+glimpse(starbucks_drinkMenu_expanded)
+```
+
