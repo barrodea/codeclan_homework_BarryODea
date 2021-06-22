@@ -38,3 +38,9 @@ calorie_count <- select(starbucks_drinkMenu_expanded, Beverage_category, Beverag
 calorie_count
 ```
 
+
+```{r}
+calorie_difference <- mutate(calorie_count, calorie_diff = Calories - 135)
+calorie_difference
+```
+
