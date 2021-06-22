@@ -94,3 +94,8 @@ beverage_brew_above_average <- (beverage_prep_cat) %>%
 beverage_brew_above_average
 ```
 
+```{r}
+zero_calories <- filter(calorie_count, Calories == 0)
+zero_calories
+```
+
