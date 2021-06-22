@@ -72,3 +72,13 @@ least_calories <- (calorie_stats) %>%
 least_calories
 ```
 
+```{r}
+beverage_prep_cat <- (calorie_count) %>%
+  group_by(Beverage_prep) %>%
+  select( Beverage_prep, Calories)
+beverage_prep_cat
+```
+```{r}
+summarise(beverage_prep_cat, mean(Calories))
+```
+
