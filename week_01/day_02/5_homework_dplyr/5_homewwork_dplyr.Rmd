@@ -32,8 +32,8 @@ glimpse(starbucks_drinkMenu_expanded)
 ```
 
 ```{r}
-calorie_count <- select(starbucks_drinkMenu_expanded, Beverage_category, Beverage, Beverage_prep, Calories) %>%
-  filter(calories = rm.na)
+calorie_count <- select(starbucks_drinkMenu_expanded, Beverage_category, Beverage, Beverage_prep, Calories) 
+  
  
 calorie_count
 ```
@@ -79,6 +79,18 @@ beverage_prep_cat <- (calorie_count) %>%
 beverage_prep_cat
 ```
 ```{r}
-summarise(beverage_prep_cat, mean(Calories))
+mean_bev_prep <- summarise(beverage_prep_cat, mean(Calories))
+```
+
+```{r}
+mean_all_drinks <- summarise(calorie_count, mean(Calories)) %>%
+  pull()
+mean_all_drinks
+```
+
+```{r}
+beverage_brew_above_average <- (beverage_prep_cat) %>%
+  filter(Calories > mean_all_drinks)
+beverage_brew_above_average
 ```
 
