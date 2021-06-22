@@ -44,3 +44,31 @@ calorie_difference <- mutate(calorie_count, calorie_diff = Calories - 135)
 calorie_difference
 ```
 
+```{r}
+calorie_stats <- (calorie_count) %>%
+  group_by(Beverage_category)
+
+calorie_stats
+```
+
+```{r}
+summarise(calorie_stats, mean(Calories))
+```
+
+```{r}
+summarise(calorie_stats, median(Calories))
+```
+```{r}
+top_calories <- (calorie_stats) %>%
+  arrange(desc(Calories)) %>%
+  head(3)
+top_calories
+```
+
+```{r}
+least_calories <- (calorie_stats) %>%
+  arrange(desc(Calories)) %>%
+  tail(3)
+least_calories
+```
+
