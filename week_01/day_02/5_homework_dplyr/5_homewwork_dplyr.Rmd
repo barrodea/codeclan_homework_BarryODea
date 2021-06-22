@@ -31,3 +31,10 @@ names(starbucks_drinkMenu_expanded)
 glimpse(starbucks_drinkMenu_expanded)
 ```
 
+```{r}
+calorie_count <- select(starbucks_drinkMenu_expanded, Beverage_category, Beverage, Beverage_prep, Calories) %>%
+  filter(calories = rm.na)
+ 
+calorie_count
+```
+
