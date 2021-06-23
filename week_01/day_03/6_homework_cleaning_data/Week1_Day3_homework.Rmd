@@ -40,7 +40,8 @@ movies_selected %>%
 
 ```{r}
 movies_selected %>%
-  filter(is.na(budget))
+  filter(is.na(budget)) %>%
+  nrow()
 
 ```
 ```{r}
@@ -48,6 +49,17 @@ movies_selected %>%
   filter(is.na(runtime))
 
 ``` 
+
+# answer added after chatting with Lee
+
+```{r}
+movies_selected %>%
+  summarise(
+    count_title_na = sum(is.na(title)),
+    count_runtime_na = sum(is.na(runtime)),
+    count_budget_na = sum(is.na(budget))
+  )
+```
 
 
 Q4
