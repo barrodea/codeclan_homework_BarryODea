@@ -1,0 +1,110 @@
+---
+title: "Day3 Homework"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+#Q1
+
+```{r}
+movies <- read_csv("data/movies.csv")
+```
+
+
+```{r}
+glimpse(movies)
+```
+
+# budget is unreadable so would like to see if that could be changed to a more readable format
+# original_title and title look similar so could check how many are not identical
+# check how many NAs appear in the data
+# date is foramtted as characters. check if this is because of missing values
+
+
+Q2
+
+```{r}
+movies_selected <- select(movies, title, budget, runtime )
+```
+
+Q3
+```{r}
+movies_selected %>%
+  filter(is.na(title))
+
+```
+
+```{r}
+movies_selected %>%
+  filter(is.na(budget))
+
+```
+```{r}
+movies_selected %>%
+  filter(is.na(runtime))
+
+``` 
+
+
+Q4
+
+```{r}
+movies_runtime <- movies_selected %>%
+  mutate(runtime = na_if(runtime, 0))
+
+movies_runtime
+```
+
+```{r}
+movies_runtime %>%
+  filter(is.na(runtime)) %>%
+  nrow()
+
+
+```
+
+
+Q5
+
+```{r}
+movies_imputed <- movies_runtime %>%
+  mutate(
+    runtime = coalesce(runtime, 
+                       median(runtime, na.rm = TRUE)
+                       )
+  )
+movies_imputed
+```
+
+```{r}
+movies_imputed %>%
+  filter(is.na(runtime))%>%
+  nrow()
+```
+
+Q6
+
+```{r}
+movies_imputed %>%
+  slice_min(runtime, n = 10)
+```
+
+```{r}
+movies_imputed %>%
+  slice_max(runtime, n = 10)
+```
+
+Q7
+
+```{r}
+movies_imputed <- movies_imputed %>%
+  mutate(
+    budget = if_else(budget <100, median(budget), budget)
+  )
+movies_imputed
+```
+
