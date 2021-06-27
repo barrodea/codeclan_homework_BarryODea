@@ -1,0 +1,346 @@
+---
+title: "Analysis of Goodreads books"
+output: html_notebook
+---
+
+# load data
+
+```{r}
+library(tidyverse)
+books <- read_csv("data/books.csv", 
+                  quote = "") 
+```
+
+# review of dataset
+
+```{r}
+dim(books)
+```
+
+```{r}
+names(books)
+```
+
+```{r}
+head(books, 5)
+```
+
+```{r}
+tail(books, 5)
+```
+
+```{r}
+glimpse(books)
+```
+
+# clean headings
+```{r}
+books <- books %>%
+  janitor::clean_names()
+```
+
+```{r}
+glimpse(books)
+```
+
+# check for missing data
+
+```{r}
+count_na <- function(col){
+  sum(is.na(col))
+}
+books %>%
+  summarise(across(everything(), count_na))
+```
+
+#look at the rows with NAs
+
+```{r}
+books %>% 
+  filter(is.na(ratings_count))
+
+```
+
+# remove missing values
+
+```{r}
+books_clean <- books %>%
+  drop_na()
+```
+
+# reduce no of columns to meaningful set
+
+```{r}
+books_subset <- books_clean %>%
+  select(title, authors, publisher, num_pages, average_rating, ratings_count, text_reviews_count)
+
+books_subset
+```
+
+
+# look for "NOT A BOOK" in author
+
+```{r}
+books_subset %>%
+  filter(authors == "NOT A BOOK")
+```
+
+# add category for books/audio
+
+```{r}
+books_categorised <- books_subset %>%
+  mutate(category = case_when(
+    authors == "NOT A BOOK" ~ "audio",
+    TRUE ~ "book"
+  ))
+```
+
+```{r}
+books_only <- books_categorised %>%
+  filter(category == "book")
+
+books_only %>%
+  distinct(category)
+```
+# get rid of books with no rating
+
+```{r}
+books_with_ratings <- books_only %>%
+  mutate(ratings_count = na_if(ratings_count, 0)) %>%
+drop_na()
+
+books_with_ratings
+```
+
+
+
+# Review of Books
+
+# mean of ratings
+
+```{r}
+mean_rating <- books_with_ratings %>%
+  summarise(mean = mean(average_rating))
+
+mean_rating
+```
+
+# median of rating
+
+```{r}
+median_rating <- books_with_ratings %>%
+  summarise( median = median(average_rating))
+
+median_rating
+```
+
+# top 10 books
+
+```{r}
+  books_with_ratings%>%
+  group_by(category) %>%
+  slice_max(average_rating, n = 10) %>%
+  arrange(average_rating)
+```
+
+# bottom 10 books
+
+```{r}
+ books_with_ratings %>%
+  select(title, average_rating) %>%
+  slice_min(average_rating, n = 10) %>%
+  arrange(desc(average_rating))
+
+```
+
+
+# book reviews above average rating
+
+```{r}
+reviews_above_avg <- books_with_ratings %>%
+  mutate(difference_frm_avg = average_rating - mean(average_rating)) %>%
+  filter(difference_frm_avg > 0)
+
+reviews_above_avg
+```
+
+
+# Review of publishers
+
+# no of publishers
+
+```{r}
+books_with_ratings %>%
+distinct(publisher)  
+```
+
+
+# mean by pulisher
+
+```{r}
+publisher_mean <- books_with_ratings %>%
+  group_by(publisher) %>%
+  summarise( mean = mean(average_rating))
+
+publisher_mean
+```
+
+
+# top 10 publisher
+
+```{r}
+publisher_mean %>%
+  slice_max(mean, n = 10) %>%
+  arrange(mean)
+
+```
+
+ # bottom 10 publishers
+ 
+```{r}
+publisher_mean %>%
+  slice_min(mean, n = 10) %>%
+  arrange(desc(mean))
+```
+ 
+ 
+ # review by author
+ 
+```{r}
+books_with_ratings %>%
+distinct(authors)  
+```
+
+# mean by author
+
+```{r}
+authors_mean <- books_with_ratings %>%
+  group_by(authors) %>%
+  summarise( mean = mean(average_rating))
+
+authors_mean
+
+```
+
+# top 10 authors
+
+```{r}
+authors_mean %>%
+  slice_max(mean, n = 10, with_ties = FALSE) %>%
+  arrange(mean)
+
+  
+```
+
+# bottom 10 authors
+
+```{r}
+authors_mean %>%
+  slice_min(mean, n = 10) %>%
+  arrange(mean)
+```
+
+
+
+# categorise books by number of pages
+
+```{r}
+books_with_ratings %>%
+  summarise(range(num_pages))
+```
+
+
+```{r}
+book_size <- books_with_ratings %>%
+  mutate(book_size = case_when(
+    num_pages >1000 ~ "large",
+    num_pages >100 ~ "medium",
+    TRUE ~ "small")
+    )
+
+book_size
+```
+
+
+# ratings per book size
+
+```{r}
+book_size %>%
+  group_by(book_size) %>%
+  summarise(mean = mean(average_rating)) %>% 
+  arrange(desc(mean))
+```
+
+ # categorise by rating
+ 
+```{r}
+books_with_ratings %>%
+  summarise(range(average_rating))
+```
+ 
+```{r}
+rating_category <- books_with_ratings %>%
+  mutate(recommendation = case_when(
+    average_rating > 3 ~ "highly recommended",
+    average_rating > 2 ~ "recommended",
+    TRUE ~ "not recommended"
+  ))
+
+rating_category
+```
+ 
+ 
+ # review of Harry Potter books
+ 
+ # group by Harry Potter books
+ 
+```{r}
+harry_potter_books <- 
+filter(books_with_ratings, grepl('Harry Potter', title)
+)
+
+harry_potter_books
+```
+
+# No of reviews
+
+```{r}
+harry_potter_review_count <- harry_potter_books %>%
+  group_by(title) %>%
+  summarise(ratings_count = sum(ratings_count)) %>%
+  arrange(desc(ratings_count))
+
+harry_potter_review_count
+```
+
+
+# Top most rated Harry Potter books
+
+```{r}
+harry_potter_review_count %>%
+  head(ratings_count, n = 5)
+```
+
+
+# highest rated Harry Potter books
+
+```{r}
+harry_potter_highest_ratings <- harry_potter_books %>%
+  select(title, average_rating) %>%
+  slice_max(average_rating, n = 5, with_ties = FALSE)
+  
+
+harry_potter_highest_ratings
+```
+
+
+# lowest rated Harry Potter books
+
+```{r}
+harry_potter_highest_ratings <- harry_potter_books %>%
+  select(title, average_rating) %>%
+  slice_min(average_rating, n = 5, with_ties = FALSE)
+  
+
+harry_potter_highest_ratings
+```

@@ -73,8 +73,7 @@ movies_runtime
 
 ```{r}
 movies_runtime %>%
-  filter(is.na(runtime)) %>%
-  nrow()
+  summarise(count_runtime_na = sum(is.na(runtime)))
 
 
 ```
@@ -118,5 +117,13 @@ movies_imputed <- movies_imputed %>%
     budget = if_else(budget <100, median(budget), budget)
   )
 movies_imputed
+```
+
+```{r}
+movies %>%
+  summarise(
+    missing_values_character = sum(is.na(across(where(is.character)))),
+    missing_values_numeric = sum(is.na(across(where(is.numeric))))
+  )
 ```
 
