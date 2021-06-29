@@ -64,7 +64,7 @@ Join the data containing fraud details with transaction details so all rows of b
 transaction_details <- 
   full_join(fraud_base, transaction_base, "transaction_id")
 
-fraud_details
+transaction_details
 ```
 
 
