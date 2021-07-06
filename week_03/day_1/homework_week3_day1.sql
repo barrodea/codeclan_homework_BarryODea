@@ -135,3 +135,25 @@ WHERE
 	first_name IS NOT NULL
 	AND last_name IS NOT NULL
 	AND department IS NOT NULL;
+
+
+/*Q17*/
+SELECT 
+ 	CONCAT(first_name, ' ', last_name, ' ', '-', ' ', department,' ( ','joined ', TO_CHAR(start_date, 'FMMonth') ,EXTRACT(YEAR FROM start_date), ')') AS badge_label
+FROM employees	
+WHERE 
+	first_name IS NOT NULL
+	AND last_name IS NOT NULL
+	AND department IS NOT NULL;
+
+
+/*Q18*/
+SELECT 
+	first_name,
+	last_name,
+	salary,
+	CASE
+		WHEN salary < 40000 THEN 'low'
+		WHEN salary >= 40000 THEN 'high'
+	END AS salary_class	
+FROM employees; 
