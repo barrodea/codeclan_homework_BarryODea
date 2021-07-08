@@ -170,32 +170,27 @@ GROUP BY department;
 --and each employee’s fte_hours to that department’s average fte_hours
 
 -- ANSWER NOT COMPLETE
+WITH biggest_dept_details(name, avg_salary, avg_fte_hours) AS (
 SELECT 
 	department,
-	AVG(salary) AS avg_salary
+	AVG(salary),
+	AVG(fte_hours)
 FROM employees 
-GROUP BY department;
-
-SELECT 
-	id,
-	first_name,
-	last_name,
-	department,
-	salary,
-	fte_hours,
-	COUNT(id) AS num_emplyees
-From employees
-WHERE (
-SELECT 
-COUNT(id)
-FROM employees
 GROUP BY department
-ORDER BY COUNT(id) DESC
+ORDER BY COUNT(id) DESC NULLS LAST
 LIMIT 1
 )
-GROUP BY id 
-ORDER BY Count(id);
-;
+SELECT 
+	e.id,
+	e.first_name,
+	e.last_name,
+	e.department,
+	e.salary,
+	e.fte_hours,
+	e.salary / bdd.avg_salary AS salary_over_dept_avg,
+  	e.fte_hours / bdd.avg_fte_hours AS fte_hours_over_dept_avg
+FROM employees AS e INNER JOIN biggest_dept_details AS bdd
+ON  e.department = bdd.name;
 
 
 -- Q18
