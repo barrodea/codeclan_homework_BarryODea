@@ -114,7 +114,7 @@ SELECT
 	e.first_name AS first_name,
 	e.last_name AS last_name,
 	pd.local_tax_code 
-FROM employees AS e LEFT JOIN pay_details as pd
+FROM employees AS e INNER JOIN pay_details as pd
 	ON e.pay_detail_id = pd.id 
 WHERE pd.local_tax_code IS NULL;
 
@@ -126,7 +126,7 @@ SELECT
 	e.first_name AS first_name,
 	e.last_name AS last_name,
 	(48 * 35 * CAST(t.charge_cost AS INT) - e.salary) * e.fte_hours AS expected_profit
-FROM employees AS e INNER JOIN teams AS t
+FROM employees AS e LEFT JOIN teams AS t
 	ON e.team_id = t.id;
 	
 --Q14
@@ -138,8 +138,8 @@ SELECT
 FROM employees 
 WHERE first_name IS NULL
 GROUP BY department 
-HAVING COUNT(id) > 2
-ORDER BY department;
+HAVING COUNT(id) >= 2
+ORDER BY COUNT(id) DESC, department;
 
 
 --Q15
@@ -152,7 +152,7 @@ FROM employees
 WHERE first_name IS NOT NULL
 GROUP BY first_name
 HAVING COUNT(id) >1
-ORDER BY first_name;
+ORDER BY COUNT(id) DESC, first_name;
 
 --Q16
 --Find the proportion of employees in each department who are grade 1
@@ -211,3 +211,20 @@ CASE
 	END AS pension_enrol_categoury
 FROM employees 
 GROUP BY pension_enrol;
+
+
+--Q19
+-- Find the first name, last name, email address and start date of all the employees who are members of the ‘Equality and Diversity’ committee. 
+--Order the member employees by their length of service in the company, longest first.
+SELECT
+	e.first_name,
+	e.last_name,
+	e.email,
+	e.start_date,
+	c.name AS commitee_name
+FROM employees AS e LEFT JOIN employees_committees AS ec
+	ON e.id = ec.employee_id
+	LEFT JOIN committees AS c 
+	ON ec.committee_id = c.id
+WHERE c.name = 'Equality and Diversity'
+ORDER BY start_date ASC NULLS LAST;
