@@ -1,0 +1,110 @@
+---
+title: "week4_weekend_homework"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+salaries <- read_csv("data/salaries.csv")
+
+head(salaries)
+```
+# Use select to see the beginning salary variable and the current salary variable
+```{r}
+salaries %>% 
+  select(beginning_salary, current_salary)
+
+```
+
+# Use filter to see the employees aged over 50, who have a salary over £20,000
+```{r}
+salaries %>% 
+  filter(age >50,
+         current_salary > 20000)
+```
+
+# Use mutate to make a new variables beginning_salary_pence and current_salary_pence. These should have the corresponding salaries in pence instead of pounds.
+```{r}
+salaries %>% 
+  mutate(beginning_salary_pence = beginning_salary * 100,
+         current_salary_pence = current_salary * 100)
+```
+
+# Use summarise to find the maximum age and the minimum age.
+```{r}
+salaries %>% 
+ summarise(max(age), 
+           min(age))
+```
+# Find the minimum salary and the maximum salary.
+```{r}
+salaries %>% 
+ summarise(max(current_salary), 
+           min(current_salary))
+```
+# Find all the employees aged under 30.
+```{r}
+salaries %>% 
+  filter(age < 30)
+```
+# Order the data in terms of increasing educational level where ties are broken using age
+```{r}
+salaries %>% 
+  arrange(educational_level, 
+          age)
+```
+
+# Drop all the non-numeric variables in the tibble
+```{r}
+salaries %>% 
+  drop_na()
+```
+# Find all employees with either less than 2 years work experience or an education level below 12.
+```{r}
+salaries %>% 
+  filter(work_experience < 2 | educational_level < 12)
+```
+
+# Transform the salary variables so they measure how many 1000s of pounds each salary is.
+```{r}
+salaries %>% 
+  mutate(beginning_salary_000s = beginning_salary / 1000,
+         current_salary_000s = current_salary / 1000)
+```
+# Find all the females employees with an employment category of ‘security officer’
+```{r}
+salaries %>% 
+  filter(gender == "females",
+         employment_category == "security officer")
+```
+
+# Find the average salary per educational level, for educational levels of 16 and below. Arrange the results from highest salary to lowest. Answer using pipes.
+```{r}
+salaries %>% 
+  group_by(educational_level) %>% 
+  filter(educational_level < 16) %>% 
+  summarise(avg_sal = mean(current_salary)) %>% 
+  arrange(desc(avg_sal))
+```
+
+# Find the average salary for each gender in each employment category. Exclude any employees with less than 2 years of work experience. Answer using pipes.
+```{r}
+salaries %>% 
+  group_by(gender, employment_category) %>% 
+  filter(work_experience < 2) %>% 
+  summarise(mean(current_salary))
+```
+
+
+# For each employment category find the difference between the mean salary and the median salary. Arrange so that the greatest difference comes first. Answer using pipes. (The difference between mean salary and median salary gives us a measure of how skewed salaries - we’ll come on to this shortly!)
+```{r}
+salaries %>% 
+  group_by(employment_category) %>% 
+  summarise(diff_mean_median = (mean(current_salary) - median(current_salary))) %>% 
+  arrange(desc(diff_mean_median))
+```
+
+
