@@ -107,4 +107,14 @@ salaries %>%
   arrange(desc(diff_mean_median))
 ```
 
+¢ read in beer data
+```{r}
+beer <- read_delim("data/beer.txt", ";")
+```
+
+# Find all the observations where the carbohydrates are missing.
+```{r}
+beer %>% 
+  sum(is.na(carbohydrates))
+```
 
