@@ -36,6 +36,14 @@ Take a little time before you start to familiarise yourself with the data.
 
 # MVP
 
+
+```{r, eval=TRUE, echo=FALSE, fig.cap="", out.width = '100%'}
+knitr::include_graphics("palette.JPG")
+```
+```{r, echo=TRUE}
+col_scheme <- c("#E89FE9", "#50434F", "#B6A7B5", "#F9A472", "#BD7040")
+```
+
 ## Part 1
 
 1. Take the data in the dataset `qb_revenue_breakdown` and make a stacked bar chart showing the sources of revenue across the two years in the dataset.
@@ -48,7 +56,7 @@ revenue_breakdown <- `qb_revenue_breakdown`
 ggplot(revenue_breakdown) +
   geom_bar(aes(x = Product, y = Revenue, fill = Year), stat = "identity") +
   labs(title = "Revenue source for 2018 and 2019") +
-  scale_fill_brewer(palette = "col_scheme") +
+  scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
@@ -67,7 +75,7 @@ ggplot(monthly_sales_kwitbit_unit1) +
        subtitle = "Data taken from monthly sales data ",
        y = "Revenue",
        x = "Months") +
-  scale_fill_brewer(palette = "col_scheme") +
+  scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
@@ -83,7 +91,7 @@ ggplot(monthly_revenue_and_cost) +
        subtitle = "Data taken from monthly sales data",
        y = "Revenue",
        x = "Months") +
-  scale_fill_brewer(palette = "col_scheme") +
+   scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
@@ -96,7 +104,7 @@ ggplot(competitors, aes(x = Year, fill = Company)) +
   geom_area(aes(y = Revenue, stat = "bin")) +
   labs(title = "Annual Sales of personal trackers over the last 5 years",
        subtitle = "Data taken from information gathered on competitors") +
-  scale_fill_brewer(palette = "col_scheme") +
+  scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
@@ -110,7 +118,7 @@ ggplot(competitors, aes(x = Year, fill = Company)) +
   geom_point(aes(y = Revenue)) +
   labs(title = "Data points for Annual Sales of personal trackers over the last 5 years",
        subtitle = "Data taken from information gathered on competitors") +
-  scale_fill_brewer(palette = "col_scheme") +
+   scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
