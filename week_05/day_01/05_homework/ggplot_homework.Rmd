@@ -91,7 +91,7 @@ ggplot(monthly_revenue_and_cost) +
        subtitle = "Data taken from monthly sales data",
        y = "Revenue",
        x = "Months") +
-   scale_fill_manual(values = col_scheme) +
+  scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
@@ -113,12 +113,12 @@ ggplot(competitors, aes(x = Year, fill = Company)) +
 5. Now show the sales from the four competitors as a line graph. Include an extra layer that shows the data points used to make the lines.
 
 ```{r}
-ggplot(competitors, aes(x = Year, fill = Company)) +
-  geom_area(aes(y = Revenue, stat = "bin")) +
-  geom_point(aes(y = Revenue)) +
+ggplot(competitors, aes(x = Year,y = Revenue, colour = Company)) +
+  geom_line() +
+  geom_point() +
   labs(title = "Data points for Annual Sales of personal trackers over the last 5 years",
        subtitle = "Data taken from information gathered on competitors") +
-   scale_fill_manual(values = col_scheme) +
+  scale_fill_manual(values = col_scheme) +
   theme_minimal() + 
   theme(text = element_text(size = 12))
 ```
@@ -127,11 +127,17 @@ ggplot(competitors, aes(x = Year, fill = Company)) +
 
 ```{r}
 device_data <- `qb_device_data`
-device_data %>% 
-  distinct(device)
+qb_device_data <- 
+mutate(qb_device_data, decimal_hour = hours + (mins/60))
 
-ggplot(device_data) +
-  geom_line(aes(x = hours, y = counts, group = hours, colour = device))
+ggplot(qb_device_data) +
+  aes(x = decimal_hour, y = counts) +
+  geom_line() + 
+  facet_grid(id ~ device) +
+   labs(title = "Comparing the number of steps that their device counts vs. their competitors") +
+   scale_fill_manual(values = col_scheme) +
+  theme_minimal() + 
+  theme(text = element_text(size = 12))
 ```
 
 
