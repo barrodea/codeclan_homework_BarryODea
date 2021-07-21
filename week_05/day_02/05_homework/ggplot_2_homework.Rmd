@@ -146,8 +146,8 @@ Now you've investigated your data separately, create plots to describe the relat
 
 Try both `backpack_weight` and `body_weight` as well as the `ratio`.   
 ```{r}
-ggplot(backpack) +
-  geom_col( aes(x= body_weight, y = backpack_weight)) +
+ggplot(back_problems) +
+  geom_point( aes(x= body_weight, y = backpack_weight)) +
   facet_grid(back_problems ~ sex)
 
 # these graphs show that the females that have back problems usually weigh less (<150) and while the backpack weigh can vary it usually weighs over 20. For males all back problems occur between 150 and 200 with a backpack weight of between 30 and 40.
