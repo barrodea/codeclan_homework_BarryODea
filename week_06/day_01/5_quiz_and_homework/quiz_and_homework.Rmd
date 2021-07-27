@@ -58,20 +58,22 @@ titanic <- titanic %>%
      class %in% c("1st", "2nd", "3rd") ~ FALSE,
      class %in% c("engineering crew", "victualling crew", "restaurant staff", "deck crew") ~ TRUE
   ))
+
+titanic %>% count(crew)
 ```
 
 # Probability of crew surviving
 ```{r}
 prob_crew_survive <- titanic %>%
-  filter(survived == "yes") %>%
-  summarise(prob = sum(crew == TRUE) / n())
+  filter(crew == TRUE) %>%
+  summarise(prob = sum(survived == "yes") / n())
 prob_crew_survive
 ```
 # Probability of crew surviving
 ```{r}
 prob_passanger_survive <- titanic %>%
-    filter(survived == "yes") %>%
-  summarise(prob = sum(crew == FALSE) / n())
+    filter(crew == FALSE) %>%
+  summarise(prob = sum(survived == "yes") / n())
 prob_passanger_survive
 ```
 
