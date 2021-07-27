@@ -122,7 +122,7 @@ For part i, `rowSums(.)` may help you setup up the necessary random variable `to
 
 ```{r}
 s_four_dice <- rolldie(4) %>% 
-  mutate(total = X1 + X2 + X3 + X4)
+    mutate(total = rowSums(.))
 
 s_sum_equals_5_6_7 <- s_four_dice %>% 
   filter(total == 5 | total == 6 | total == 7)
@@ -139,7 +139,6 @@ sum_prob
 
 
 ```
-
 
 
 <br>
