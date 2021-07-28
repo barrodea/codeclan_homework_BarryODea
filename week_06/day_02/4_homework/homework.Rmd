@@ -84,6 +84,18 @@ top_brand_rating <- tibble(
 top_brand_rating %>%
   ggplot(aes(x = x, y = f_x)) +
   geom_line()
+
+samsung_rating %>%
+  ggplot(aes(x = rating)) +
+  geom_histogram(aes(y = ..density..), col = "white") +
+  stat_function(
+    fun = dnorm, 
+    args = list(
+      mean =3.57,
+      sd = 0.685
+    ),
+    col = "red"
+  )
 ```
 
 # the normal distribution does fit this these ratings. The ratings largely fall close to the mean and there is no skews either side.
