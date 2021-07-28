@@ -65,7 +65,8 @@ samsung_rating <- mobile_phone_data %>%
 
 mean_rating <- samsung_rating %>% 
   group_by(brand) %>% 
-  summarise(mean = mean(rating)) 
+  summarise(mean = mean(rating),
+            sd = sd(rating)) 
 
 mean_rating
 ```
