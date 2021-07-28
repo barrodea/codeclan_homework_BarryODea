@@ -93,7 +93,7 @@ Today was pretty full-on! Here are some problems to help you consolidate what yo
 s_one_die <- rolldie(1)
  
 s_one_die %>% 
-  filter(X1 == 5) %>% 
+  filter(X1 < 5) %>% 
   summarise(p = n()/nrow(s_one_die))
   
 ```
