@@ -1,0 +1,249 @@
+---
+title: "Weekend Homework - Model Building"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+```
+
+# MVP
+
+We've looked at a few different ways in which we can build models this week, including how to prepare them properly. This weekend we'll build a multiple linear regression model on a dataset which will need some preparation. The data can be found in the data folder, along with a data dictionary
+
+We want to investigate the avocado dataset, and, in particular, to model the `AveragePrice` of the avocados. Use the tools we've worked with this week in order to prepare your dataset and find appropriate predictors. Once you've built your model use the validation techniques discussed on Wednesday to evaluate it. Feel free to focus either on building an *explanatory* or a *predictive* model, or both if you are feeling energetic!
+
+As part of the MVP we want you not to just run the code but also have a go at **interpreting the results** and write your thinking in comments in your script.
+
+**Hints and tips**
+
+* `region` may lead to many dummy variables. Think carefully about whether to include this variable or not (there is no one 'right' answer to this!)
+* Think about whether each variable is *categorical* or *numerical*. If categorical, make sure that the variable is represented as a factor.
+* We will not treat this data as a time series, so `Date` will not be needed in your models, but can you extract any useful features out of `Date` before you discard it?
+* If you want to build a predictive model, consider using either `leaps` or `glmulti` to help with this.
+
+```{r}
+library(tidyverse)
+library(GGally)
+library(modelr)
+library(janitor)
+library(lubridate)
+library(ggfortify)
+```
+
+```{r}
+avocados <- read_csv("data/avocado.csv") %>% 
+  clean_names()
+
+glimpse(avocados)
+```
+
+# Drop the columns that I don't feel are relevant for the model. In the case of region I will drop this as there are a large number of regions and it will make the analysis too difficult. 
+```{r}
+avocados_tidy <- avocados %>% 
+  mutate(month = as_factor(month(date))) %>% 
+  select(-c(x1, year, region, date, total_bags, total_volume)) 
+```
+
+
+# check to make sure there are no alias in the data
+```{r}
+alias(average_price ~ ., data = avocados_tidy)
+```
+
+
+
+# check the correlation between average price and the other variables.
+```{r}
+ggpairs(avocados_tidy)
+```
+_ from the graph you can see that the numeric variables have low levels of correlation but month and type have a bigger impact on the variation in price. 
+
+# build a model that starts with these predictors
+```{r}
+model_1a <- lm(average_price ~ type, data = avocados_tidy)
+summary(model_1a)
+```
+
+```{r}
+model_1b <- lm(average_price ~ month, data = avocados_tidy)
+summary(model_1b)
+```
+
+
+# test to see if worth including month in the data
+```{r}
+null_model <- lm(average_price ~ 1, data = avocados_tidy)
+month_model <- lm(average_price ~ month, data = avocados_tidy)
+anova(null_model, month_model)
+```
+- p-value less that 0.05 indicates we should leave this in the model
+
+From the above models type has the highest r2 value so we will use this as the first predictor in the model
+
+
+# plot the model to see the diagnostics
+```{r}
+autoplot(model_1a)
+```
+
+ - for the residuals vs fitted and the scale-location although the lines are broadly where you would want them to be the values are clusters in two areas suggesting this is not a good model. The line in the normal q-q model is not a good fit at the top so again this is not the best model. However, I will go ahead with the model for the homework.
+ 
+ # add in residuals and get further correlations
+```{r}
+avocados_resid <- avocados_tidy %>% 
+  add_residuals(model_1a) %>% 
+  select(-c(average_price, type))
+
+ggpairs(avocados_resid)
+```
+  - this suggests a low level of correlation across the variables but it looks like the x4046, x 4770, large bags or month are next to look at
+  
+```{r}
+model_2a <- lm(average_price ~ type + x4046, data = avocados_tidy)
+summary(model_2a)
+```
+  
+
+```{r}
+model_2b <- lm(average_price ~ type + x4770, data = avocados_tidy)
+summary(model_2b)
+```
+
+```{r}
+model_2c <- lm(average_price ~ type + large_bags, data = avocados_tidy)
+summary(model_2c)
+```
+
+
+
+```{r}
+model_2d <- lm(average_price ~ type + month, data = avocados_tidy)
+summary(model_2d)
+```
+
+
+- from the r2 you can see that month is the next best predicor to add to the model.
+
+# plot this model to see diagnostic test
+```{r}
+autoplot(model_2d)
+```
+
+-  there still looks like a pattern in the diagrams to suggest this is not a good model
+
+# repeat the steps for adding residuals to investigate what the next predictor should be
+
+```{r}
+avocados_resid <- avocados_tidy %>% 
+  add_residuals(model_2d) %>% 
+  select(-c(average_price, type, month))
+
+ggpairs(avocados_resid)
+```
+
+ - the above suggests we should look at the x4046 and large bags
+ 
+```{r}
+model_3a <- lm(average_price ~ type + month + x4046, data = avocados_tidy)
+summary(model_3a)
+```
+ 
+
+```{r}
+model_3b <- lm(average_price ~ type + month + large_bags, data = avocados_tidy)
+summary(model_3b)
+```
+
+- from the r2 you can see that month is the next best predicor to add to the model.
+
+```{r}
+autoplot(model_3a)
+```
+
+ - I think residuals vs fitted is looking better but still not a model to be used.
+ 
+ # repeat the steps for adding residuals to investigate what the next predictor should be
+
+```{r}
+avocados_resid <- avocados_tidy %>% 
+  add_residuals(model_3a) %>% 
+  select(-c(average_price, type, month, x4046))
+
+ggpairs(avocados_resid)
+```
+
+ - it is worth looking at x4770 and large bags again
+ 
+ 
+```{r}
+model_4a <- lm(average_price ~ type + month + x4046 + x4770, data = avocados_tidy)
+summary(model_4a)
+```
+
+
+```{r}
+model_4b <- lm(average_price ~ type + month + x4046 + large_bags, data = avocados_tidy)
+summary(model_4b)
+```
+
+# there is very little difference in the r2 or adjusted r2 so I think I might stop at 3 predictors.
+
+
+# look at the preddictive model to compare to the above
+
+```{r}
+library(leaps)
+
+regsubsets_forward <- regsubsets(average_price ~ ., data = avocados_tidy, nvmax = 18, method = "forward")
+sum_regsubsets_forward <- summary(regsubsets_forward)
+sum_regsubsets_forward
+```
+
+
+```{r}
+plot(sum_regsubsets_forward$rsq, type = "b")
+```
+
+```{r}
+
+plot(sum_regsubsets_forward$bic, type = "b")
+
+```
+
+ - the above shows that you could possible go up to 10 predictors but some of these are months and I used months as one of my indicators so I think there is a good comparison to the models
+ 
+ 
+ 
+ # Homework part 2 
+I want to predict how well 6 year-olds are going to do in their final school exams. Using the following variables am I likely under-fitting, fitting well or over-fitting? Postcode, gender, reading level, score in maths test, date of birth, family income. 
+There is a lot of variables and some like date of birth may not be relevant so you may overfit
+
+If I have two models, one with an AIC score of 34,902 and the other with an AIC score of 33,559 which model should I use?
+AIC is better being lower therefore the one with 33,559
+
+I have two models, the first with: r-squared: 0.44, adjusted r-squared: 0.43. The second with: r-squared: 0.47, adjusted r-squared: 0.41. Which one should I use?
+use the higher adjusted r-squared
+
+I have a model with the following errors: RMSE error on test set: 10.3, RMSE error on training data: 10.4. Do you think this model is over-fitting?
+you would expect the RMSE in the training data to be lower so yes.
+
+How does k-fold validation work?
+It splits the data in folds and alternated the folds as the test and trains the remaining folds
+
+What is a validation set? When do you need one?
+It is a set of data held back. It is used neither in training or to compare models against each other.
+Used when fitting models that have hyperparameters.
+
+Describe how backwards selection works.
+It starts with using all the variables as predictors and takes one out at each step that lowers the adjusted r square the least.
+
+Describe how best subset selection works.
+It searchs all possible combinations of predictors for the best model (i.e. the model with highest r2) of that size.
