@@ -1,0 +1,151 @@
+---
+title: "decision_tree_homework"
+author: "Barry O Dea"
+date: "31/08/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(rpart)
+library(rpart.plot)
+library(tidyverse)
+
+library(tidyverse)
+titanic_set <- read_csv('data/titanic_decision_tree_data.csv')
+
+shuffle_index <- sample(1:nrow(titanic_set))
+
+# shuffle the data so class order isn't in order - need this for training/testing split later on 
+titanic_set <- titanic_set[shuffle_index, ]
+```
+
+
+## Question 1  
+
+<br> 
+Cleaning up the data is always the first step. Do the following: 
+
+  * Take only observations which have a `survived` flag (i.e. that aren't missing)  
+  * Turn your important variables into factors (sex, survived, pclass, embarkation)  
+  * Create an `age_status` variable which groups individuals under (and including) 16 years of age into a category called "child" category and those over 16 into a category called "adult".  
+  * Drop the NA  
+  * Drop any variables you don't need (`X1`, `passenger_id`, `name`, `ticket`, `far`, `cabin`)  
+
+```{r}
+titanic_clean <- titanic_set %>%
+  filter(survived %in% c(0,1)) %>%
+	mutate(sex = as.factor(sex), 
+	       age_status = as.factor(if_else(age <= 16, "child", "adult")),
+         class = factor(pclass, levels = c(3,2,1), labels = c("Lower", "Middle", "Upper")), 
+	       survived_flag = factor(survived, levels = c(0,1), labels = c("Died", "Survived")), 
+	       port_embarkation = as.factor(embarked)) %>%
+  select(sex, age_status, class, port_embarkation, sib_sp, parch, survived_flag) %>%
+  na.omit()
+```
+
+
+## Question 2  
+
+<br> 
+Have a look at your data and create some plots to ensure you know what you're working with before you begin. Write a summary of what you have found in your plots. Which variables do you think might be useful to predict whether or not people are going to die? Knowing this before you start is the best way to have a sanity check that your model is doing a good job.  
+
+```{r}
+library(GGally)
+library(modelr)
+
+ggpairs(titanic_clean)
+```
+From this I would say parch, class, sex and age status could be good predicators for survival.
+
+
+## Question 3  
+
+<br> 
+Now you can start to build your model. Create your testing and training set using an appropriate split. Check you have balanced sets. Write down why you chose the split you did and produce output tables to show whether or not it is balanced. [**Extra** - if you want to force balanced testing and training sets, have a look at the `stratified()` function in package `splitstackshape` (you can specify multiple variables to stratify on by passing a vector of variable names to the `group` argument, and get back testing and training sets with argument `bothSets = TRUE`)]
+
+```{r}
+# get how many rows we have in total to work out the percentage
+n_data <- nrow(titanic_clean)
+
+# create a test sample index
+test_index <- sample(1:n_data, size = n_data*0.2)
+
+# create test set
+titanic_test  <- slice(titanic_clean, test_index)
+
+# create training set
+titanic_train <- slice(titanic_clean, -test_index)
+
+
+titanic_test %>%
+ janitor::tabyl(survived_flag)
+
+titanic_train %>%
+ janitor::tabyl(survived_flag)
+```
+
+I have 80% of the data going into the training set, and the remaining 20% go in the test set. This gives a good proportion to train and enough remaining for a meaningful test.
+
+## Question 4      
+
+<br> 
+Create your decision tree to try and predict survival probability using an appropriate method, and create a decision tree plot.
+
+```{r}
+titanic_fit <- rpart(
+  formula = survived_flag ~ ., 
+  data = titanic_train, 
+  method = 'class'
+)
+
+rpart.plot(titanic_fit, 
+           yesno = 2, 
+           fallen.leaves = TRUE, 
+           faclen = 6, 
+           digits = 4)
+```
+
+## Question 5    
+
+<br> 
+Write down what this tells you, in detail. What variables are important? What does each node tell you? Who has the highest chance of surviving? Who has the lowest? Provide as much detail as you can.    
+ - the root node shows that you have a probability of .40 of dying if you were on the titanic.
+ - the green boxes show the probabilities of surviving and the blue boxes the probabilities of dying
+ - the first node is ssplit by sex with males having a low (0.21) probability and females having high (0.745) probability of survival.
+ - Males are broken down further by age, siblings and parents/children to give a further breakdown of the probability of surviving. 
+  - The highest chance of survival is if you were male, lower/middle class, a child (16 or under), with less than 2 siblings and more than one parent on board. This group had a probability of 0.9375 of survival. This is just greater than 0.9297 for females not in lower class.
+  - The lowest chance of survival is if you were male, lower/middle class, a child (16 or under), with 2 or more siblings on board. This group had a probability of 0.0000 of survival
+  
+## Question 6     
+
+<br>  
+Test and add your predictions to your data. Create a confusion matrix. Write down in detail what this tells you for this specific dataset.  
+
+```{r}
+library(yardstick)
+
+titanic_test_pred <- titanic_test %>% 
+  add_predictions(titanic_fit, type = "class")
+
+conf_mat <- titanic_test_pred %>%
+              conf_mat(truth = survived_flag, estimate = pred)
+
+conf_mat
+```
+Here you see that the TP is 29. So the test was correct for survived 29 times.
+The FP was 2. The test incorrectly returned survived 2 times where the person actually died.
+The TN was 82. So the test was correct for died 82 times.
+The FN was 29. The test incorrectly returned died 29 times where the person actually survived.
+
+```{r}
+accuracy <- titanic_test_pred %>%
+ accuracy(truth = survived_flag, estimate = pred)
+
+accuracy 
+```
+
+This shows the model is 78% accurate
