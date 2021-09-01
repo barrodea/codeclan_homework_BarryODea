@@ -1,0 +1,134 @@
+---
+title: "Clustering homework"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+* You have been provided some customer data from a shopping centre. Do some exploratory analysis on the data. Comment on findings. 
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(broom)
+library(factoextra)
+
+customers <- read_csv("data/mall_customers.csv") %>% 
+  clean_names() %>% 
+  select(-c(customer_id))
+
+head(customers)
+```
+```{r}
+library(GGally)
+
+ggpairs(customers)
+```
+
+```{r}
+ggplot(customers) +
+  geom_col(aes(x = gender, y = spending_score_1_100)) 
+```
+```{r}
+ggplot(customers) +
+  geom_point(aes(x = annual_income_k, y = spending_score_1_100)) 
+```
+
+From the analysis there you can see males spend more than females but there does not seem to be any correaltion between annual income and spending score.
+
+* We are interested in creating a marketing campaign to target customers based on their spending score and annual income. Perform a k-means clustering to find if there are meaningful clusters in the data to target the customers. 
+
+
+* Perform k-means clustering and chose a value of k.
+
+# select the two columns and scale the data
+```{r}
+cust_scale <- customers %>%
+              select(annual_income_k, spending_score_1_100) %>% 
+                mutate_if(is.numeric, scale)
+
+cust_scale
+```
+
+#calculate our clusters, tidy up the data, augment the clusters on to the original data, and use the glance function to see what was contained within our model.
+
+```{r}
+max_k <- 20 
+
+k_clusters <- tibble(k = 1:max_k) %>%
+  mutate(
+    kclust = map(k, ~ kmeans(cust_scale, .x, nstart = 25)), 
+    tidied = map(kclust, tidy),
+    glanced = map(kclust, glance),
+    augmented = map(kclust, augment, customers)
+  )
+
+k_clusters
+```
+# unnest the data
+```{r}
+clusterings <- k_clusters %>%
+  unnest(glanced)
+
+clusterings
+```
+
+# perform the elbow test
+```{r}
+ggplot(clusterings, aes(x=k, y=tot.withinss)) +
+  geom_point() +
+    geom_line() +
+    scale_x_continuous(breaks = seq(1, 20, by = 1))
+```
+This looks like the elbow is ar 3 and we should have a k of 3
+
+# look at the silhouette coefficience
+```{r}
+fviz_nbclust(cust_scale, 
+             kmeans, 
+             method = "silhouette", 
+             nstart = 25)
+```
+here this indicates a k = 5 should be used 
+
+# perform a gap analysis
+
+```{r}
+fviz_nbclust(cust_scale, 
+             kmeans, 
+             method = "gap_stat", 
+             nstart = 25, 
+             k.max = 10)
+```
+Again this indicates a k = 5 should be used and has a gap statistic over 0.5 which is a good indicator
+
+Overall the indicators point to k of 5 being the best number of clusters
+
+
+* Visualise the clustering for your chosen value of k.
+
+```{r}
+ clusterings %>% 
+  unnest(cols = c(augmented)) %>%
+  filter(k <= 5) %>%
+  ggplot(aes(x = annual_income_k, y = spending_score_1_100)) +
+  geom_point(aes(color = .cluster))
+```
+
+
+
+* Do you think the clustering seems a good fit for this data?
+
+From the visualisation this looks like the data for these two variables is a good fit for the data.
+
+* Comment on the attributes on one or two of the clusters (maybe even give them a label if you like - like in section 4.1 of the 'Segmentation & clustering intro' lesson). 
+
+Segment 5 have a low annual income and a high spending score
+Segment 5 have a high annual income and a high spending score
+
+
+
+
