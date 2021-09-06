@@ -1,0 +1,93 @@
+---
+title: "Text Mining Homework"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    df_print: paged
+    css: ../../../styles.css
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = FALSE, fig.align = "center", message = FALSE, warning = FALSE)
+```
+
+# MVP
+
+Using the dataset `austen_books()` from the package `janeaustenr`:
+
+```{r}
+library(tidytext)
+library(janeaustenr)
+library(tidyverse)
+```
+
+
+1. Find the most common words in both Pride & Prejudice and Sense & Sensibility.
+
+```{r}
+titles <- c("Pride and Prejudice", "Sense and Sensibility")
+
+books <- list(prideprejudice, sensesensibility)
+
+books <- purrr::map_chr(books, paste, collapse = " ") %>% 
+  paste(collapse = " ")
+
+```
+
+
+```{r}
+all_books_df <- tibble(
+  title = titles,
+  text = books
+) %>%
+  unnest_tokens(word, text)
+
+head(all_books_df)
+```
+
+```{r}
+compare <- tibble(
+  titles = c("Pride and Prejudice", "Sense and Sensibility"),
+  text = books
+)
+```
+
+```{r}
+compare %>%
+  unnest_tokens(word, text) %>%
+  count(titles, word) %>%
+  bind_tf_idf(word, titles, n) %>%
+  arrange(titles, desc(n)) %>%
+  group_by(titles)
+```
+
+
+2. Find the most common words in both Pride & Prejudice and Sense & Sensibility, not including stop words.
+
+```{r}
+compare %>%
+  unnest_tokens(word, text) %>%
+  count(titles, word) %>%
+  bind_tf_idf(word, titles, n) %>%
+  arrange(titles, desc(n)) %>%
+  group_by(titles) %>% 
+  anti_join(stop_words) 
+```
+
+
+3. Find the most common sentiment words in both Pride & Prejudice and Sense & Sensibility.
+
+```{r}
+all_books_df %>%
+  inner_join(get_sentiments("bing")) %>% 
+  count(word, sort = TRUE)
+```
+
+
+# Extension
+
+Taking your results above. Can you create a plot which visualises the differences between the books?  
